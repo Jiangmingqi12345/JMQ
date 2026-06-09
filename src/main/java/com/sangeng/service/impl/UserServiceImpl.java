@@ -18,7 +18,7 @@ public class UserServiceImpl implements UserService {
     
     /**
      * @Autowired注解：自动注入UserDao实例
-     * 在SSM架构中，Service层通过依赖注入调用DAO层的方法
+     * 在SSM架构中，Service层通过依赖注入调用DAO层的方法，实现业务逻辑
      */
     @Autowired
     private UserDao userDao;
