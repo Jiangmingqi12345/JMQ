@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+">
+    <!-- 
+        1. 读取数据库配置文件
+        作用：将db.properties文件中的配置项加载到Spring容器中，供其他bean使用
+        说明：使用${key}的方式可以引用配置文件中的值
+    -->
+    <context:property-placeholder location="classpath:db.properties"/>
+    
+    <!-- 
+        2. 配置数据源
+        作用：定义数据库连接信息，是数据库操作的基础
+        说明：使用Spring内置的DriverManagerDataSource，生产环境建议使用连接池如Druid或HikariCP
+    -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <!--数据库驱动类名，从配置文件中读取 -->
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <!--数据库连接URL，包含数据库地址、端口、数据库名等信息 -->
+        <property name="url" value="${jdbc.url}" />
+        <!--数据库用户名 -->
+        <property name="username" value="${jdbc.username}" />
+        <!--数据库密码 -->
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+    
+    <!-- 
+        3. 配置事务管理器
+        作用：管理数据库事务，支持声明式事务注解
+        说明：依赖于上面配置的数据源
+    -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--注入数据源 -->
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <!-- 
+        4. 开启事务注解支持
+        作用：允许在Service层使用@Transactional注解来声明事务
+        说明：指定了事务管理器为上面配置的transactionManager
+    -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    
+    <!-- 
+        5. 配置MyBatis的SqlSessionFactory
+        作用：创建SqlSession实例，是MyBatis操作数据库的核心对象
+        说明：整合MyBatis和Spring的关键配置
+    -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入数据源，用于获取数据库连接 -->
+        <property name="dataSource" ref="dataSource" />
+        <!--指定MyBatis核心配置文件位置，包含MyBatis的全局配置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <!--指定Mapper XML文件位置，包含SQL语句和结果映射 -->
+        <property name="mapperLocations" value="classpath:com/sangeng/mapper/*.xml" />
+    </bean>
+    
+    <!-- 
+        6. 配置Mapper接口扫描器
+        作用：自动扫描指定包下的Mapper接口，生成代理对象并注入到Spring容器中
+        说明：这样在Service层就可以直接@Autowired注入Mapper接口
+    -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--指定要扫描的包路径，会扫描该包下所有的接口 -->
+        <property name="basePackage" value="com.sangeng.mapper"/>
+    </bean>
+    
+    <!-- 
+        7. 扫描Service层组件
+        作用：自动扫描指定包下的Service类，生成实例并注入到Spring容器中
+        说明：会扫描所有带有@Service注解的类
+    -->
+    <context:component-scan base-package="com.sangeng.service" />
+
+</beans>

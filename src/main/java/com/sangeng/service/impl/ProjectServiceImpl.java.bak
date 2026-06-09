@@ -1,0 +1,78 @@
+package com.sangeng.service.impl;
+
+import com.sangeng.mapper.ProjectDao;
+import com.sangeng.pojo.Project;
+import com.sangeng.service.ProjectService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.Date;
+import java.util.List;
+
+@Service
+public class ProjectServiceImpl implements ProjectService {
+    @Autowired
+    private ProjectDao projectDao;
+    
+    @Override
+    public List<Project> listOpen(int page, int size, String name) {
+        int offset = (page - 1) * size;
+        return projectDao.findAllOpen(offset, size, name);
+    }
+    
+    @Override
+    public Project getById(Integer id) {
+        return projectDao.findById(id);
+    }
+    
+    @Override
+    @Transactional
+    public boolean create(Project p) {
+        if (p.getStatus() == null) {
+            p.setStatus(0);
+        }
+        if (p.getMaxStudents() == null) {
+            p.setMaxStudents(1);
+        }
+        if (p.getSelectedCount() == null) {
+            p.setSelectedCount(0);
+        }
+        p.setCreateTime(new Date());
+        return projectDao.insert(p) > 0;
+    }
+    
+    @Override
+    @Transactional
+    public boolean update(Project p) {
+        return projectDao.update(p) > 0;
+    }
+    
+    @Override
+    @Transactional
+    public boolean delete(Integer id) {
+        return projectDao.deleteById(id) > 0;
+    }
+    
+    @Override
+    public List<Project> findByTeacher(Integer teacherId) {
+        return projectDao.findByTeacher(teacherId);
+    }
+    
+    @Override
+    public List<Project> findAll(int page, int size, String name) {
+        int offset = (page - 1) * size;
+        return projectDao.findAll(offset, size, name);
+    }
+    
+    @Override
+    @Transactional
+    public boolean updateStatus(Integer projectId, Integer status) {
+        return projectDao.updateStatus(projectId, status) > 0;
+    }
+    
+    @Override
+    @Transactional
+    public boolean updateSelectedCount(Integer projectId, Integer delta) {
+        return projectDao.updateSelectedCount(projectId, delta) > 0;
+    }
+}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/mvc
+  http://www.springframework.org/schema/mvc/spring-mvc.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    ">
+    <!-- 指定需要扫描的包 -->
+    <context:component-scan base-package="com.sangeng.controller" />
+    <!-- 加载注解驱动 -->
+    <mvc:annotation-driven />
+
+    <!-- 允许访问静态资源 -->
+    <mvc:default-servlet-handler />
+    
+    <!-- 配置CORS，允许跨域请求 -->
+    <mvc:cors>
+        <mvc:mapping path="/**" 
+                     allowed-origins="http://localhost:5173" 
+                     allowed-methods="GET, POST, PUT, DELETE, OPTIONS" 
+                     allowed-headers="*" 
+                     allow-credentials="true" />
+    </mvc:cors>
+    
+    <!-- 配置MultipartResolver，用于处理文件上传 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 最大上传文件大小，单位：字节 -->
+        <property name="maxUploadSize" value="10485760" />
+        <!-- 最大内存大小，超过后将写入临时文件 -->
+        <property name="maxInMemorySize" value="4096" />
+        <!-- 默认编码 -->
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+</beans>

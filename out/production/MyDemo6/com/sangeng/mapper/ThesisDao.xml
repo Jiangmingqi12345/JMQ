@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sangeng.mapper.ThesisDao">
+    <resultMap id="ThesisMap" type="com.sangeng.pojo.Thesis">
+        <id column="id" property="id"/>
+        <result column="student_id" property="studentId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_path" property="filePath"/>
+        <result column="status" property="status"/>
+        <result column="upload_time" property="uploadTime"/>
+        <result column="title" property="title"/>
+        <result column="project_id" property="projectId"/>
+        <result column="review_reason" property="reviewReason"/>
+        <result column="score" property="score"/>
+        <result column="level" property="level"/>
+        <result column="review_comment" property="reviewComment"/>
+    </resultMap>
+
+    <select id="findById" resultMap="ThesisMap">SELECT * FROM thesis WHERE id=#{id}</select>
+    <select id="findByStudent" resultMap="ThesisMap">SELECT * FROM thesis WHERE student_id=#{studentId}</select>
+
+    <insert id="insert" parameterType="com.sangeng.pojo.Thesis" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO thesis(student_id,file_name,file_path,status,upload_time) VALUES(#{studentId},#{fileName},#{filePath},#{status},#{uploadTime})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE thesis SET `status`=#{status}, `review_reason`=#{reviewReason}, 
+            `score`=#{score}, `level`=#{level}, `review_comment`=#{reviewComment} 
+        WHERE `id`=#{id}
+    </update>
+    
+    <select id="findAllReviewing" resultMap="ThesisMap">
+        SELECT * FROM thesis WHERE status='uploaded' OR status='REVIEWING'
+    </select>
+    
+    <select id="findAll" resultMap="ThesisMap">
+        SELECT * FROM thesis ORDER BY upload_time DESC
+    </select>
+</mapper>
+

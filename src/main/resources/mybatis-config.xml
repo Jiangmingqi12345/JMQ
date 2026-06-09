@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!-- 
+    MyBatis核心配置文件
+    作用：配置MyBatis的全局设置，如日志、别名、插件等
+    说明：这是MyBatis的核心配置，与Spring整合后，大部分配置会由Spring管理
+-->
+<configuration>
+    <!-- 
+        settings配置：MyBatis的全局设置
+        作用：配置MyBatis的各种运行时行为
+    -->
+    <settings>
+        <!-- 
+            设置日志实现
+            作用：指定MyBatis使用的日志框架，这里使用STDOUT_LOGGING（标准输出日志）
+            说明：开发环境下使用STDOUT_LOGGING方便调试，生产环境建议使用Log4j或Logback
+        -->
+        <setting name="logImpl" value="STDOUT_LOGGING" />
+        <!-- 
+            开启驼峰命名自动映射
+            作用：自动将数据库列名（下划线分隔）映射到Java属性名（驼峰命名）
+            例如：user_name -> userName
+        -->
+        <setting name="mapUnderscoreToCamelCase" value="true" />
+    </settings>
+    <!-- 
+        typeAliases配置：类型别名
+        作用：为Java类型设置一个短的别名，简化XML配置
+        说明：这里通过包扫描的方式，为com.sangeng.pojo包下的所有类自动生成别名
+              别名默认为类名的首字母小写，例如：User -> user
+    -->
+    <typeAliases>
+        <!-- 指定要扫描的包路径 -->
+        <package name="com.sangeng.pojo" />
+    </typeAliases>
+</configuration>

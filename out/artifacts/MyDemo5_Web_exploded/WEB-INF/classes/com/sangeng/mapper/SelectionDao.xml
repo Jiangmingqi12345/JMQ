@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- MyBatis映射文件DTD约束，定义了XML文件的合法元素和属性 -->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- mapper标签：映射文件的根元素，namespace属性指定对应的Mapper接口全路径 -->
+<mapper namespace="com.sangeng.mapper.SelectionDao">
+    
+    <!-- resultMap标签：定义数据库查询结果与Java对象的映射关系 -->
+    <!-- id属性：resultMap的唯一标识，供SQL语句引用 -->
+    <!-- type属性：指定映射的Java实体类全路径 -->
+    <resultMap id="SelectionMap" type="com.sangeng.pojo.Selection">
+        <!-- id标签：映射主键字段 -->
+        <!-- column属性：数据库表字段名 -->
+        <!-- property属性：Java对象的属性名 -->
+        <id column="id" property="id"/>
+        <!-- result标签：映射普通字段 -->
+        <result column="student_id" property="studentId"/><!-- 学生ID，驼峰映射 -->
+        <result column="project_id" property="projectId"/><!-- 项目ID，驼峰映射 -->
+        <result column="status" property="status"/><!-- 选题状态（0-待审核，1-通过，2-拒绝） -->
+        <result column="select_time" property="selectTime"/><!-- 选题时间，驼峰映射 -->
+        <result column="reason" property="reason"/><!-- 选题理由 -->
+        <result column="project_name" property="projectName"/><!-- 关联查询的项目名称 -->
+        <result column="student_name" property="studentName"/><!-- 关联查询的学生姓名 -->
+    </resultMap>
+
+    <!-- select标签：定义查询SQL -->
+    <!-- id属性：对应Mapper接口中的方法名 -->
+    <!-- resultMap属性：引用上面定义的resultMap -->
+    <!-- 根据学生ID和项目ID查询选题记录 -->
+    <select id="findByStudentProject" resultMap="SelectionMap">
+        SELECT s.*, p.title AS project_name, u.name AS student_name 
+        FROM selection s 
+        LEFT JOIN project p ON s.project_id = p.id <!-- 左连接项目表，获取项目标题 -->
+        LEFT JOIN user_account u ON s.student_id = u.id <!-- 左连接用户表，获取学生姓名 -->
+        WHERE s.student_id=#{studentId} AND s.project_id=#{projectId}<!-- 条件：学生ID和项目ID -->
+    </select>
+
+    <!-- 根据学生ID查询该学生的所有选题记录 -->
+    <select id="findByStudent" resultMap="SelectionMap">
+        SELECT s.*, p.title AS project_name, u.name AS student_name 
+        FROM selection s 
+        LEFT JOIN project p ON s.project_id = p.id 
+        LEFT JOIN user_account u ON s.student_id = u.id 
+        WHERE s.student_id=#{studentId}<!-- 条件：学生ID -->
+    </select>
+
+    <!-- insert标签：定义插入SQL -->
+    <!-- parameterType属性：指定传入参数的Java类型 -->
+    <!-- useGeneratedKeys属性：启用自动生成主键 -->
+    <!-- keyProperty属性：指定将自动生成的主键值赋给Java对象的哪个属性 -->
+    <insert id="insert" parameterType="com.sangeng.pojo.Selection" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO selection(student_id, project_id, status, select_time, reason) 
+        VALUES(#{studentId},#{projectId},#{status},#{selectTime},#{reason})
+    </insert>
+
+    <!-- update标签：定义更新SQL -->
+    <!-- 更新选题状态 -->
+    <update id="updateStatus">
+        UPDATE selection SET status=#{status} WHERE id=#{id}
+    </update>
+    
+    <!-- 根据ID查询选题记录 -->
+    <select id="findById" resultMap="SelectionMap">
+        SELECT s.*, p.title AS project_name, u.name AS student_name 
+        FROM selection s 
+        LEFT JOIN project p ON s.project_id = p.id 
+        LEFT JOIN user_account u ON s.student_id = u.id 
+        WHERE s.id=#{id}<!-- 条件：选题ID -->
+    </select>
+    
+    <!-- 根据项目ID查询该项目的所有选题记录 -->
+    <select id="findByProject" resultMap="SelectionMap">
+        SELECT s.*, p.title AS project_name, u.name AS student_name 
+        FROM selection s 
+        LEFT JOIN project p ON s.project_id = p.id 
+        LEFT JOIN user_account u ON s.student_id = u.id 
+        WHERE s.project_id=#{projectId}<!-- 条件：项目ID -->
+    </select>
+    
+    <!-- 根据教师ID查询该教师所有项目的选题记录 -->
+    <select id="findByTeacher" resultMap="SelectionMap">
+        SELECT s.*, p.title AS project_name, u.name AS student_name 
+        FROM selection s 
+        LEFT JOIN project p ON s.project_id = p.id 
+        LEFT JOIN user_account u ON s.student_id = u.id 
+        WHERE p.teacher_id=#{teacherId}<!-- 条件：教师ID（通过项目表关联） -->
+    </select>
+    
+    <!-- 根据状态查询所有选题记录 -->
+    <select id="findAllByStatus" resultMap="SelectionMap">
+        SELECT s.*, p.title AS project_name, u.name AS student_name 
+        FROM selection s 
+        LEFT JOIN project p ON s.project_id = p.id 
+        LEFT JOIN user_account u ON s.student_id = u.id 
+        WHERE s.status=#{status}<!-- 条件：选题状态 -->
+    </select>
+    
+    <!-- 查询所有选题记录 -->
+    <select id="findAll" resultMap="SelectionMap">
+        SELECT s.*, p.title AS project_name, u.name AS student_name 
+        FROM selection s 
+        LEFT JOIN project p ON s.project_id = p.id 
+        LEFT JOIN user_account u ON s.student_id = u.id
+    </select>
+    
+    <!-- delete标签：定义删除SQL -->
+    <!-- 根据ID删除选题记录 -->
+    <delete id="deleteById">
+        DELETE FROM selection WHERE id=#{id}
+    </delete>
+    
+    <!-- 根据项目ID删除所有相关选题记录 -->
+    <delete id="deleteByProjectId">
+        DELETE FROM selection WHERE project_id=#{projectId}
+    </delete>
+</mapper>

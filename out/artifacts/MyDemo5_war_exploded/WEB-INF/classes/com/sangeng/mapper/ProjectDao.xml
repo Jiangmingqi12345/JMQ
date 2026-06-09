@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+    ProjectMapper XML文件
+    作用：定义ProjectDao接口的SQL实现
+    说明：对应com.sangeng.mapper.ProjectDao接口
+-->
+<mapper namespace="com.sangeng.mapper.ProjectDao">
+    <!-- 
+        结果映射：project表到Project实体类的映射
+        id：映射ID，用于后续SQL语句引用
+        type：目标实体类全路径
+    -->
+    <resultMap id="ProjectMap" type="com.sangeng.pojo.Project">
+        <!-- 主键映射 -->
+        <id column="id" property="id"/>
+        <!-- 普通字段映射：数据库列名 -> 实体类属性名 -->
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <!-- 下划线转驼峰映射：teacher_id -> teacherId -->
+        <result column="teacher_id" property="teacherId"/>
+        <result column="status" property="status"/>
+        <!-- 下划线转驼峰映射：max_students -> maxStudents -->
+        <result column="max_students" property="maxStudents"/>
+        <!-- 下划线转驼峰映射：selected_count -> selectedCount -->
+        <result column="selected_count" property="selectedCount"/>
+        <!-- 下划线转驼峰映射：create_time -> createTime -->
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 
+        根据ID查询项目
+        id：对应ProjectDao接口的findById方法
+        resultMap：使用上面定义的ProjectMap映射结果
+        SQL：从project表中查询指定ID的项目
+    -->
+    <select id="findById" resultMap="ProjectMap">
+        SELECT * FROM project WHERE id=#{id}
+    </select>
+
+    <!-- 
+        查询所有开放的项目，支持分页和名称搜索
+        id：对应ProjectDao接口的findAllOpen方法
+        resultMap：使用ProjectMap映射结果
+        SQL：查询status=0（开放）的项目，支持按名称模糊搜索，按创建时间倒序，支持分页
+        参数：
+            - offset：分页偏移量
+            - limit：每页条数
+            - name：项目名称搜索关键字（可选）
+    -->
+    <select id="findAllOpen" resultMap="ProjectMap">
+        SELECT * FROM project 
+        WHERE status=0 
+        <!-- 动态SQL：如果name不为空，添加名称模糊搜索条件 -->
+        <if test="name != null and name != ''">
+            AND title LIKE CONCAT('%', #{name}, '%')
+        </if>
+        ORDER BY create_time DESC LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 
+        插入项目
+        id：对应ProjectDao接口的insert方法
+        parameterType：参数类型为Project实体类
+        useGeneratedKeys：使用数据库自增主键
+        keyProperty：将自增主键值设置到Project实体的id属性
+        SQL：向project表插入新项目，selected_count初始为0
+    -->
+    <insert id="insert" parameterType="com.sangeng.pojo.Project" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project(title,description,teacher_id,status,max_students,selected_count,create_time) 
+        VALUES(#{title},#{description},#{teacherId},#{status},#{maxStudents},0,#{createTime})
+    </insert>
+
+    <!-- 
+        更新项目信息
+        id：对应ProjectDao接口的update方法
+        parameterType：参数类型为Project实体类
+        SQL：更新project表中指定ID的项目信息
+    -->
+    <update id="update" parameterType="com.sangeng.pojo.Project">
+        UPDATE project 
+        SET title=#{title},description=#{description},status=#{status},max_students=#{maxStudents} 
+        WHERE id=#{id}
+    </update>
+
+    <!-- 
+        增加项目的已选学生数
+        id：对应ProjectDao接口的increaseSelectedCount方法
+        parameterType：参数类型为int
+        SQL：将指定项目的已选学生数加1，仅当未达到最大限制时执行
+    -->
+    <update id="increaseSelectedCount" parameterType="int">
+        UPDATE project 
+        SET selected_count = selected_count + 1 
+        WHERE id = #{projectId} AND selected_count &lt; max_students
+    </update>
+    
+    <!-- 
+        根据ID删除项目
+        id：对应ProjectDao接口的deleteById方法
+        parameterType：参数类型为int
+        SQL：从project表中删除指定ID的项目
+    -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM project WHERE id = #{id}
+    </delete>
+    
+    <!-- 
+        根据教师ID查询项目列表
+        id：对应ProjectDao接口的findByTeacher方法
+        resultMap：使用ProjectMap映射结果
+        SQL：查询指定教师发布的所有项目
+    -->
+    <select id="findByTeacher" resultMap="ProjectMap">
+        SELECT * FROM project WHERE teacher_id = #{teacherId}
+    </select>
+    
+    <!-- 
+        查询所有项目，支持分页和名称搜索
+        id：对应ProjectDao接口的findAll方法
+        resultMap：使用ProjectMap映射结果
+        SQL：查询所有项目，支持按名称模糊搜索，按创建时间倒序，支持分页
+        参数：
+            - offset：分页偏移量
+            - limit：每页条数
+            - name：项目名称搜索关键字（可选）
+    -->
+    <select id="findAll" resultMap="ProjectMap">
+        SELECT * FROM project
+        <!-- 动态WHERE条件 -->
+        <where>
+            <!-- 如果name不为空，添加名称模糊搜索条件 -->
+            <if test="name != null and name != ''">
+                AND title LIKE CONCAT('%', #{name}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 
+        更新项目状态
+        id：对应ProjectDao接口的updateStatus方法
+        parameterType：参数类型为map
+        SQL：更新指定ID项目的状态
+        参数：
+            - id：项目ID
+            - status：新状态
+    -->
+    <update id="updateStatus" parameterType="map">
+        UPDATE project SET status = #{status} WHERE id = #{id}
+    </update>
+    
+    <!-- 
+        更新项目的已选学生数
+        id：对应ProjectDao接口的updateSelectedCount方法
+        parameterType：参数类型为map
+        SQL：调整指定项目的已选学生数，支持增加或减少
+        参数：
+            - id：项目ID
+            - delta：变化量，正数表示增加，负数表示减少
+    -->
+    <update id="updateSelectedCount" parameterType="map">
+        UPDATE project 
+        SET selected_count = selected_count + #{delta} 
+        WHERE id = #{id} AND selected_count + #{delta} >= 0
+    </update>
+</mapper>
