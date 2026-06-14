@@ -11,7 +11,7 @@ public class Project {
     /**
      * 项目ID
      * 作用：唯一标识一个项目
-     * 说明：数据库主键，自增生成
+     * 说明：数据库主键
      */
     private Integer id;
     

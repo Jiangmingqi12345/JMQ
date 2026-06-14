@@ -60,7 +60,7 @@ public class ProjectController {
             // 构建结果集
             Map<String, Object> resultMap = new HashMap<>();
             resultMap.put("data", projects); // 项目列表
-            resultMap.put("total", total); // 总数
+            resultMap.put("total", total); // 总数量
             
             return Result.success(resultMap); // 返回成功结果
         } catch (Exception e) {
