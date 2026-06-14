@@ -93,7 +93,7 @@ const form = reactive({
   status: 0
 })
 
-// 获取项目ID
+// 从路由参数中获取项目ID
 const projectId = route.params.id
 
 // 获取教师列表
